@@ -1,8 +1,9 @@
 steps:
-  # 1️⃣ SonarCloud 扫描
   - id: sonar_scan
     name: 'sonarsource/sonar-scanner-cli:latest'
     entrypoint: sh
+    env:
+      - 'SONARTOKEN'   # 直接引用 Cloud Build 环境变量
     args:
       - '-c'
       - |
@@ -12,32 +13,24 @@ steps:
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=$SONARTOKEN
 
-  # 2️⃣ 发 GitHub PR 评论
   - id: sonar_comment
     name: 'alpine:3.18'
     entrypoint: sh
+    env:
+      - 'GITHUBPAT'
+      - 'SONARTOKEN'
     args:
       - '-c'
       - |
-        set -e
-        SONAR_PROJECT_KEY=SonarCloudTest
-        REPO_FULL_NAME=yousaikei/SonarCloudTest
-        COMMIT_SHA=$SHORT_SHA
-
-        # 获取 Quality Gate 状态
         STATUS=$(curl -s -u $SONARTOKEN: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=$SONAR_PROJECT_KEY" | jq -r '.projectStatus.status')
+          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=SonarCloudTest" | jq -r '.projectStatus.status')
 
-        # PR Number（PoC可手动填写或从 webhook payload 获取）
         PR_NUMBER=1
+        REPO_FULL_NAME=yousaikei/SonarCloudTest
 
-        # 发评论
         curl -s -X POST -H "Authorization: token $GITHUBPAT" \
           -H "Accept: application/vnd.github+json" \
           https://api.github.com/repos/$REPO_FULL_NAME/issues/$PR_NUMBER/comments \
-          -d "{\"body\":\"🔍 SonarCloud Quality Gate: **$STATUS** → [See Report](https://sonarcloud.io/dashboard?id=$SONAR_PROJECT_KEY)\"}"
+          -d "{\"body\":\"🔍 SonarCloud Quality Gate: **$STATUS** → [See Report](https://sonarcloud.io/dashboard?id=SonarCloudTest)\"}"
 
-substitutions:
-  _SONAR_TOKEN: $SONARTOKEN
-  _GITHUB_PAT: $GITHUBPAT
 
