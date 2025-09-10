@@ -9,5 +9,5 @@ steps:
           -Dsonar.projectKey=SonarCloudTest \
           -Dsonar.organization=yousaikei \
           -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=$_SONARTOKEN
-
+          -Dsonar.login=$_SONARTOKEN \
+          -Dsonar.sources=.
