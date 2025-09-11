@@ -1,0 +1,32 @@
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches: [ main, master, develop, feature-test ]
+  pull_request:
+    branches: [ main, master, develop, feature-test ]
+
+jobs:
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 获取完整的 git 历史，用于更好的分析
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Run Python HelloWorld
+      run: python main.py
+    
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub 自动提供
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # 需要在 GitHub Secrets 中设置
