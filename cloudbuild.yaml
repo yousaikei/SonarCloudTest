@@ -8,12 +8,18 @@ steps:
 
   # 步骤 2: SonarCloud 扫描
   - name: 'sonarsource/sonar-scanner-cli:latest'
+    entrypoint: 'sh'
     args:
-      - '-Dsonar.projectKey=SonarCloudTest'
-      - '-Dsonar.organization=yousaikei'
-      - '-Dsonar.host.url=https://sonarcloud.io'
-      - '-Dsonar.login=$_SONARTOKEN'
-      - '-Dsonar.sources=.'
+      - '-c'
+      - |
+        mkdir -p /tmp/sonar-work && \
+        sonar-scanner \
+          -Dsonar.projectKey=SonarCloudTest \
+          -Dsonar.organization=yousaikei \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=$_SONARTOKEN \
+          -Dsonar.sources=. \
+          -Dsonar.working.directory=/tmp/sonar-work
     id: 'sonar-scan'
     dependsOn: ['run-hello-world']
 
