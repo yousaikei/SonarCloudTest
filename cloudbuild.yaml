@@ -1,13 +1,16 @@
 steps:
+  # Step 1: Run SonarCloud Scan
   - id: sonar_scan
     name: 'sonarsource/sonar-scanner-cli:latest'
     entrypoint: sh
     args:
       - '-c'
       - |
+        mkdir -p /tmp/.scannerwork
         sonar-scanner \
           -Dsonar.projectKey=SonarCloudTest \
           -Dsonar.organization=yousaikei \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=$_SONARTOKEN \
-          -Dsonar.sources=.
+          -Dsonar.sources=. \
+          -Dsonar.working.directory=/tmp/.scannerwork
