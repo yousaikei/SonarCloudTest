@@ -1,15 +1,21 @@
+# Cloud Build 配置文件
 steps:
-  - id: sonar_scan
-    name: 'sonarsource/sonar-scanner-cli:latest'
-    entrypoint: sh
+  # 步骤 1: 运行 Python HelloWorld
+  - name: 'python:3.9-slim'
+    entrypoint: 'python'
+    args: ['main.py']
+    id: 'run-hello-world'
+
+  # 步骤 2: SonarCloud 扫描
+  - name: 'sonarsource/sonar-scanner-cli:latest'
     args:
-      - '-c'
-      - |
-        mkdir -p /tmp/.scannerwork
-        sonar-scanner \
-          -Dsonar.projectKey=SonarCloudTest \
-          -Dsonar.organization=yousaikei \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=$_SONARTOKEN \
-          -Dsonar.sources=. \
-          -Dsonar.working.directory=/tmp/.scannerwork
+      - '-Dsonar.projectKey=SonarCloudTest'
+      - '-Dsonar.organization=yousaikei'
+      - '-Dsonar.host.url=https://sonarcloud.io'
+      - '-Dsonar.login=$_SONARTOKEN'
+      - '-Dsonar.sources=.'
+    id: 'sonar-scan'
+    dependsOn: ['run-hello-world']
+
+# 可选: 设置超时
+timeout: '600s'
