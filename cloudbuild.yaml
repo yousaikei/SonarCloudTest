@@ -1,4 +1,4 @@
-# 最简方案：先修改权限再运行
+# 替代方案：使用 ubuntu 镜像手动安装 SonarScanner
 steps:
   # 步骤 1: 运行 Python HelloWorld
   - name: 'python:3.9-slim'
@@ -6,14 +6,18 @@ steps:
     args: ['main.py']
     id: 'run-hello-world'
 
-  # 步骤 2: 修改权限并运行 SonarCloud 扫描
-  - name: 'sonarsource/sonar-scanner-cli:latest'
-    entrypoint: 'sh'
+  # 步骤 2: SonarCloud 扫描 (手动安装方式)
+  - name: 'ubuntu:20.04'
+    entrypoint: 'bash'
     args:
       - '-c'
       - |
-        chmod 777 /workspace
-        sonar-scanner \
+        apt-get update && \
+        apt-get install -y openjdk-11-jre-headless wget unzip && \
+        wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip && \
+        unzip -q sonar-scanner-cli-4.8.0.2856-linux.zip && \
+        mv sonar-scanner-4.8.0.2856-linux /opt/sonar-scanner && \
+        /opt/sonar-scanner/bin/sonar-scanner \
           -Dsonar.projectKey=SonarCloudTest \
           -Dsonar.organization=yousaikei \
           -Dsonar.host.url=https://sonarcloud.io \
