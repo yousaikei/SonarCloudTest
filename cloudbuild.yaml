@@ -1,4 +1,4 @@
-# Cloud Build 配置文件
+# 最简方案：先修改权限再运行
 steps:
   # 步骤 1: 运行 Python HelloWorld
   - name: 'python:3.9-slim'
@@ -6,20 +6,19 @@ steps:
     args: ['main.py']
     id: 'run-hello-world'
 
-  # 步骤 2: SonarCloud 扫描
+  # 步骤 2: 修改权限并运行 SonarCloud 扫描
   - name: 'sonarsource/sonar-scanner-cli:latest'
     entrypoint: 'sh'
     args:
       - '-c'
       - |
-        mkdir -p /tmp/sonar-work && \
+        chmod 777 /workspace
         sonar-scanner \
           -Dsonar.projectKey=SonarCloudTest \
           -Dsonar.organization=yousaikei \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=$_SONARTOKEN \
-          -Dsonar.sources=. \
-          -Dsonar.working.directory=/tmp/sonar-work
+          -Dsonar.sources=.
     id: 'sonar-scan'
     dependsOn: ['run-hello-world']
 
