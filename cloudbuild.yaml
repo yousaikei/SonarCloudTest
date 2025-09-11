@@ -1,4 +1,4 @@
-# 替代方案：使用 ubuntu 镜像手动安装 SonarScanner
+# Cloud Build 配置文件
 steps:
   # 步骤 1: 运行 Python HelloWorld
   - name: 'python:3.9-slim'
@@ -6,25 +6,27 @@ steps:
     args: ['main.py']
     id: 'run-hello-world'
 
-  # 步骤 2: SonarCloud 扫描 (手动安装方式)
-  - name: 'ubuntu:20.04'
-    entrypoint: 'bash'
+  # 步骤 2: SonarCloud 扫描
+  - name: 'gcr.io/cloud-builders/docker'
     args:
-      - '-c'
-      - |
-        apt-get update && \
-        apt-get install -y openjdk-11-jre-headless wget unzip && \
-        wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip && \
-        unzip -q sonar-scanner-cli-4.8.0.2856-linux.zip && \
-        mv sonar-scanner-4.8.0.2856-linux /opt/sonar-scanner && \
-        /opt/sonar-scanner/bin/sonar-scanner \
-          -Dsonar.projectKey=SonarCloudTest \
-          -Dsonar.organization=yousaikei \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=$_SONARTOKEN \
-          -Dsonar.sources=.
+      - 'run'
+      - '--rm'
+      - '-v'
+      - '/workspace:/usr/src'
+      - '-w'
+      - '/usr/src'
+      - '-e'
+      - 'SONAR_TOKEN=$_SONARTOKEN'
+      - 'sonarsource/sonar-scanner-cli:latest'
+      - 'sonar-scanner'
+      - '-Dsonar.projectKey=SonarCloudTest'
+      - '-Dsonar.organization=yousaikei'
+      - '-Dsonar.host.url=https://sonarcloud.io'
+      - '-Dsonar.login=$_SONARTOKEN'
+      - '-Dsonar.sources=.'
     id: 'sonar-scan'
     dependsOn: ['run-hello-world']
 
 # 可选: 设置超时
 timeout: '600s'
+
